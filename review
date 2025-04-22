@@ -1,0 +1,54 @@
+const fs = require('fs');
+const path = require('path');
+
+app.delete('/reviews/:id', (req, res) => {
+  const reviewId = req.params.id;
+
+  // Simulated review lookup
+  const review = reviews.find(r => r.id === reviewId);
+  if (!review) return res.status(404).json({ message: 'Review not found' });
+
+  const imagePath = path.join(__dirname, 'public/uploads', review.image);
+
+  // Delete image file
+  fs.unlink(imagePath, (err) => {
+    if (err) {
+      console.error('Image delete failed:', err);
+    } else {
+      console.log('Image deleted:', review.image);
+    }
+
+    // Remove review from DB
+    reviews = reviews.filter(r => r.id !== reviewId);
+    res.json({ message: 'Review and image deleted' });
+  });
+});
+const express = require('express');
+const books = require('./books');
+const app = express();
+const PORT = 3000;
+
+// Async callback pattern to get all books
+function getAllBooks(callback) {
+  setTimeout(() => {
+    if (books.length === 0) {
+      callback(new Error("No books found."), null);
+    } else {
+      callback(null, books);
+    }
+  }, 500); // Simulate async delay
+}
+
+app.get('/books', (req, res) => {
+  getAllBooks((err, result) => {
+    if (err) {
+      return res.status(404).json({ error: err.message });
+    }
+    res.json(result);
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+
